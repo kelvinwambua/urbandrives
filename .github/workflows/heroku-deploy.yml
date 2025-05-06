@@ -18,6 +18,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
       
+      - name: Make Maven wrapper executable
+        run: |
+          cd backend
+          chmod +x ./mvnw
+      
       - name: Build with Maven
         run: |
           cd backend
