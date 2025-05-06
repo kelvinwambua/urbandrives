@@ -28,13 +28,14 @@ jobs:
           cd backend
           ./mvnw clean package -DskipTests
           
-      - name: Login to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "urbandrives"
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          justlogin: true
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+      
+      - name: Login to Heroku Container
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
       
       - name: Build and push Docker image
         env:
