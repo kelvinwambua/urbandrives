@@ -27,22 +27,26 @@ jobs:
         run: |
           cd backend
           ./mvnw clean package -DskipTests
-          
+      
       - name: Install Heroku CLI
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
+          export PATH="/usr/local/bin:$PATH"
+          export PATH="/usr/local/lib/heroku/bin:$PATH"
       
       - name: Login to Heroku Container
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
+        run: |
+          which heroku || echo "Heroku not found"
+          /usr/local/bin/heroku container:login
       
       - name: Build and push Docker image
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push web --app urbandrives
+        run: /usr/local/bin/heroku container:push web --app urbandrives
       
       - name: Release to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release web --app urbandrives
+        run: /usr/local/bin/heroku container:release web --app urbandrives
