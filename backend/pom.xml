@@ -30,19 +30,19 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
-       
+
     <!-- Spring Boot Starter Web -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    
+
     <!-- Spring Security -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
-    
+
     <!-- JWT Library -->
     <dependency>
         <groupId>io.jsonwebtoken</groupId>
@@ -69,8 +69,23 @@
         <artifactId>jjwt-jackson</artifactId>
         <version>0.11.5</version>
     </dependency>
-    
-    <!-- For JWKS -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
     <dependency>
         <groupId>com.nimbusds</groupId>
         <artifactId>nimbus-jose-jwt</artifactId>
