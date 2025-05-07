@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "~/components/ui/form"
 import { useState } from "react"
+import { ArrowRight, Car, Key, Mail, User } from "lucide-react"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -44,7 +45,7 @@ type FormValues = z.infer<typeof formSchema>
 export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const steps = ["credentials", "contact"]
+  const steps = ["credentials", "security"]
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -95,7 +96,7 @@ export default function SignUpPage() {
       case "credentials":
         isValid = await form.trigger(["name", "email"]);
         break;
-      case "contact":
+      case "security":
         isValid = await form.trigger(["password", "confirmPassword"]);
         break;
       default:
@@ -123,25 +124,15 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen   flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-xl shadow-md overflow-hidden">
         {/* Logo header with gradient background */}
         <div className="bg-primary p-6">
           <div className="flex items-center justify-center">
-            {/* <div className="w-16 h-16 relative mr-3">
-              <Image 
-                src="/mainlogo.png" 
-                alt="Mehetabel Counselling Services" 
-                width={64}
-                height={64}
-                layout="responsive"
-                objectFit="contain"
-                priority
-              />
-            </div> */}
+            <Car className="h-8 w-8 text-primary-foreground mr-2" />
             <div className="text-primary-foreground">
-              <h1 className="font-bold text-xl">Mehetabel</h1>
-              <p className="text-xs text-primary-foreground/80">Counselling Services</p>
+              <h1 className="font-bold text-xl">Urban Drives</h1>
+              <p className="text-xs text-primary-foreground/80">Premium Car Rental Service</p>
             </div>
           </div>
           
@@ -162,7 +153,7 @@ export default function SignUpPage() {
         <div className="p-6">
           <div className="mb-6 text-center">
             <h2 className="text-xl font-semibold text-foreground">Create your account</h2>
-            <p className="text-sm text-muted-foreground"> Begin your healing journey</p>
+            <p className="text-sm text-muted-foreground">Join Urban Drives and start your journey</p>
           </div>
           
           <Form {...form}>
@@ -176,12 +167,15 @@ export default function SignUpPage() {
                       <FormItem>
                         <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                         <FormControl>
-                          <Input 
-                            id="name" 
-                            placeholder="Jane Doe"
-                            className="rounded-md focus:ring-primary focus:border-primary"
-                            {...field} 
-                          />
+                          <div className="relative">
+                            <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              id="name" 
+                              placeholder="Jane Doe"
+                              className="pl-9 rounded-md"
+                              {...field} 
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage className="text-xs" />
                       </FormItem>
@@ -195,13 +189,16 @@ export default function SignUpPage() {
                       <FormItem>
                         <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
                         <FormControl>
-                          <Input 
-                            id="email" 
-                            type="email" 
-                            placeholder="you@example.com"
-                            className="rounded-md focus:ring-primary focus:border-primary"
-                            {...field} 
-                          />
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              placeholder="you@example.com"
+                              className="pl-9 rounded-md"
+                              {...field} 
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage className="text-xs" />
                       </FormItem>
@@ -219,13 +216,16 @@ export default function SignUpPage() {
                       <FormItem>
                         <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                         <FormControl>
-                          <Input 
-                            id="password" 
-                            type="password"
-                            placeholder="Create a strong password"
-                            className="rounded-md focus:ring-primary focus:border-primary"
-                            {...field} 
-                          />
+                          <div className="relative">
+                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              id="password" 
+                              type="password"
+                              placeholder="Create a strong password"
+                              className="pl-9 rounded-md"
+                              {...field} 
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage className="text-xs" />
                       </FormItem>
@@ -239,13 +239,16 @@ export default function SignUpPage() {
                       <FormItem>
                         <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                         <FormControl>
-                          <Input 
-                            id="confirmPassword" 
-                            type="password"
-                            placeholder="Confirm your password"
-                            className="rounded-md focus:ring-primary focus:border-primary"
-                            {...field} 
-                          />
+                          <div className="relative">
+                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              id="confirmPassword" 
+                              type="password"
+                              placeholder="Confirm your password"
+                              className="pl-9 rounded-md"
+                              {...field} 
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage className="text-xs" />
                       </FormItem>
@@ -259,7 +262,7 @@ export default function SignUpPage() {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    className="flex-1 border-border bg-background text-foreground hover:bg-muted/50 py-2 rounded-md transition-colors"
+                    className="flex-1"
                     onClick={goToPrevStep}
                     disabled={loading}
                   >
@@ -269,11 +272,12 @@ export default function SignUpPage() {
                 
                 <Button 
                   type="button" 
-                  className={`${currentStep === 0 ? 'w-full' : 'flex-1'} bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-md transition-colors`}
+                  className={`${currentStep === 0 ? 'w-full' : 'flex-1'}`}
                   onClick={goToNextStep}
                   disabled={loading}
                 >
                   {currentStep < steps.length - 1 ? "Continue" : "Create Account"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
               
@@ -288,18 +292,18 @@ export default function SignUpPage() {
               
               <Button 
                 variant="outline" 
-                className="w-full border border-border bg-background text-foreground hover:bg-muted/50 py-2 rounded-md transition-colors"
+                className="w-full"
                 type="button"
               >
- <svg
-  role="img"
-  viewBox="0 0 24 24"
-  xmlns="http://www.w3.org/2000/svg"
-  className="mr-2 h-4 w-4"
-  fill="currentColor"
->
-  <path d={siGoogle.path } />
-</svg>
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mr-2 h-4 w-4"
+                  fill="currentColor"
+                >
+                  <path d={siGoogle.path} />
+                </svg>
                 Google
               </Button>
               
@@ -315,7 +319,7 @@ export default function SignUpPage() {
       </div>
       
       <p className="mt-8 text-center text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} Mehetabel Counselling Services. All rights reserved.
+        &copy; {new Date().getFullYear()} Urban Drives. All rights reserved.
       </p>
     </div>
   )
