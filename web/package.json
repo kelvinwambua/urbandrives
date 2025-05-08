@@ -28,6 +28,8 @@
 		"lucide-react": "^0.508.0",
 		"mysql2": "^3.14.1",
 		"next": "^15.2.3",
+		"posthog-js": "^1.240.4",
+		"posthog-node": "^4.17.1",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-hook-form": "^7.56.2",
