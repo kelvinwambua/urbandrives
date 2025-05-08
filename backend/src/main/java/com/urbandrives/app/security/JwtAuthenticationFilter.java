@@ -49,19 +49,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String issuer = jwt.getIssuer();
             System.out.println("Token issuer: " + issuer);
 
-            
+
             if (jwt.getSignature() == null || jwt.getSignature().isEmpty()) {
                 System.out.println("Invalid token signature");
                 throw new JWTVerificationException("Invalid token signature");
             }
 
-            
+
             if (!"http://localhost:3000".equals(issuer)) {
                 System.out.println("Invalid issuer: " + issuer + ", expected: http://localhost:3000");
                 throw new JWTVerificationException("Invalid issuer");
             }
 
-         
+
             if (jwt.getExpiresAt() != null && jwt.getExpiresAt().getTime() < System.currentTimeMillis()) {
                 System.out.println("Token expired");
                 throw new JWTVerificationException("Token expired");
@@ -70,11 +70,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             System.out.println("Assuming EdDSA algorithm for Ed25519 key");
 
-            
+
             String username = jwt.getSubject();
+            String email = jwt.getClaim("email").asString();
+            String name = jwt.getClaim("name").asString();
             System.out.println("Authenticated user: " + username);
 
-            
+
             List<String> roles = null;
             try {
                 roles = jwt.getClaim("roles").asList(String.class);
