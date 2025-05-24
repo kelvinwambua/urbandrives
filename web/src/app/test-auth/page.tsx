@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 
-
 interface UserPrincipal {
   id: string
   email: string
@@ -28,7 +27,6 @@ export default function AuthTestPage() {
   const [testAuthData, setTestAuthData] = useState<AuthTestResponse | null>(null)
   const [loading, setLoading] = useState(false)
 
-
   const API_BASE_URL = 'https://urbandrives.vercel.app/api'
 
   const fetchToken = async () => {
@@ -44,12 +42,11 @@ export default function AuthTestPage() {
       if (response.ok) {
         const tokenData = await response.text()
         setToken(tokenData)
-    
       } else {
         throw new Error(`Failed to fetch token: ${response.status}`)
       }
     } catch (error) {
- 
+      console.error('Error fetching token:', error)
     } finally {
       setLoading(false)
     }
@@ -57,23 +54,32 @@ export default function AuthTestPage() {
 
   const getCurrentUser = async () => {
     if (!token) {
- 
+      console.error('No token available')
       return
     }
 
     setLoading(true)
     try {
-    console.log(token)
-    const responseToken = await fetch(`${API_BASE_URL}/auth/token`, {
+      // Get fresh token
+      const responseToken = await fetch(`${API_BASE_URL}/auth/token`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       })
+      
+      if (!responseToken.ok) {
+        throw new Error(`Failed to fetch fresh token: ${responseToken.status}`)
+      }
+      
+      // Extract the token text from the response
+      const freshToken = await responseToken.text()
+      
+      // Use the fresh token to get user data
       const response = await fetch(`https://urbandrives-6eb940e4a23c.herokuapp.com/auth/me`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${responseToken}`,
+          'Authorization': `Bearer ${freshToken}`,
           'Content-Type': 'application/json',
         },
       })
@@ -81,14 +87,13 @@ export default function AuthTestPage() {
       if (response.ok) {
         const userData: UserPrincipal = await response.json()
         setCurrentUser(userData)
-     
       } else if (response.status === 401) {
-
+        console.error('Unauthorized - token may be expired')
       } else {
         throw new Error(`Failed to fetch user: ${response.status}`)
       }
     } catch (error) {
-    
+      console.error('Error getting current user:', error)
     } finally {
       setLoading(false)
     }
@@ -96,16 +101,30 @@ export default function AuthTestPage() {
 
   const testAuth = async () => {
     if (!token) {
-  
+      console.error('No token available')
       return
     }
 
     setLoading(true)
     try {
+      // Get fresh token for this test too
+      const responseToken = await fetch(`${API_BASE_URL}/auth/token`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (!responseToken.ok) {
+        throw new Error(`Failed to fetch fresh token: ${responseToken.status}`)
+      }
+      
+      const freshToken = await responseToken.text()
+      
       const response = await fetch(`https://urbandrives-6eb940e4a23c.herokuapp.com/auth/me`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${freshToken}`,
           'Content-Type': 'application/json',
         },
       })
@@ -113,14 +132,13 @@ export default function AuthTestPage() {
       if (response.ok) {
         const authData: AuthTestResponse = await response.json()
         setTestAuthData(authData)
- 
       } else if (response.status === 401) {
-   
+        console.error('Unauthorized - token may be expired')
       } else {
         throw new Error(`Auth test failed: ${response.status}`)
       }
     } catch (error) {
-  
+      console.error('Error testing auth:', error)
     } finally {
       setLoading(false)
     }
@@ -138,12 +156,12 @@ export default function AuthTestPage() {
 
       if (response.ok) {
         const healthData = await response.json()
-  
+        console.log('Health check passed:', healthData)
       } else {
         throw new Error(`Health check failed: ${response.status}`)
       }
     } catch (error) {
-    
+      console.error('Health check error:', error)
     } finally {
       setLoading(false)
     }
@@ -251,8 +269,6 @@ export default function AuthTestPage() {
           </CardContent>
         </Card>
       </div>
-
-  
     </div>
   )
 }

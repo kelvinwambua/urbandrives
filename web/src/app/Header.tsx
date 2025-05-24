@@ -13,8 +13,10 @@ import {
  PopoverContent,
  PopoverTrigger,
 } from "~/components/ui/popover"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
+    const router = useRouter()
    const [searchData, setSearchData] = useState({
        location: '',
        pickupDate: undefined as Date | undefined,
@@ -29,7 +31,8 @@ export default function Header() {
    }
 
    const handleSearch = () => {
-       console.log('Search data:', searchData)
+    router.push("/cars")
+       
    }
 
    const getDefaultDates = () => {

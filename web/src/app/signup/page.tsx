@@ -64,7 +64,7 @@ export default function SignUpPage() {
         email: values.email,
         password: values.password,
         name: values.name,
-        callbackURL: "/"
+        callbackURL: "/cars"
       },{
         onRequest:() => {
           setLoading(true)
@@ -96,7 +96,7 @@ export default function SignUpPage() {
 
        await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/"
+        callbackURL: "/cars"
 
        })
       console.log("Signing up with Google")
