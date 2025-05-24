@@ -1,30 +1,37 @@
-
 package com.urbandrives.app.security;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.Ed25519Verifier;
+import com.nimbusds.jose.jwk.OctetKeyPair;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final String jwksUrl;
+    private final JwksClient jwksClient;
+    private final String expectedIssuer;
 
-    public JwtAuthenticationFilter(String jwksUrl) {
-        this.jwksUrl = jwksUrl;
+    public JwtAuthenticationFilter(JwksClient jwksClient, @Value("${app.jwt.issuer}") String expectedIssuer) {
+        this.jwksClient = jwksClient;
+        this.expectedIssuer = expectedIssuer;
     }
 
     @Override
@@ -33,76 +40,85 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("No Bearer token found");
+            System.out.println("No Bearer token found in request");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
-        System.out.println("Processing token: " + token.substring(0, Math.min(20, token.length())) + "...");
 
         try {
-            DecodedJWT jwt = JWT.decode(token);
-            String kid = jwt.getKeyId();
-            System.out.println("Token kid: " + kid);
+            UserPrincipal userPrincipal = validateAndParseToken(token);
 
-            String issuer = jwt.getIssuer();
-            System.out.println("Token issuer: " + issuer);
-
-
-            if (jwt.getSignature() == null || jwt.getSignature().isEmpty()) {
-                System.out.println("Invalid token signature");
-                throw new JWTVerificationException("Invalid token signature");
-            }
-
-
-            if (!"http://localhost:3000".equals(issuer)) {
-                System.out.println("Invalid issuer: " + issuer + ", expected: http://localhost:3000");
-                throw new JWTVerificationException("Invalid issuer");
-            }
-
-
-            if (jwt.getExpiresAt() != null && jwt.getExpiresAt().getTime() < System.currentTimeMillis()) {
-                System.out.println("Token expired");
-                throw new JWTVerificationException("Token expired");
-            }
-
-
-            System.out.println("Assuming EdDSA algorithm for Ed25519 key");
-
-
-            String username = jwt.getSubject();
-            String email = jwt.getClaim("email").asString();
-            String name = jwt.getClaim("name").asString();
-            System.out.println("Authenticated user: " + username);
-
-
-            List<String> roles = null;
-            try {
-                roles = jwt.getClaim("roles").asList(String.class);
-                System.out.println("Roles: " + (roles != null ? roles : "none"));
-            } catch (Exception e) {
-                System.out.println("No roles found in token");
-            }
-
-            List<SimpleGrantedAuthority> authorities = roles != null ?
-                roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()) :
-                List.of();
+            List<SimpleGrantedAuthority> authorities = userPrincipal.getRoles() != null ?
+                userPrincipal.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    .collect(Collectors.toList()) :
+                List.of(new SimpleGrantedAuthority("ROLE_USER"));
 
             UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(username, null, authorities);
+                new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("Authentication successful!");
+            System.out.println("Authentication successful for user: " + userPrincipal.getEmail());
 
-        } catch (JWTVerificationException e) {
-            System.out.println("JWT Verification error: " + e.getMessage());
-            SecurityContextHolder.clearContext();
         } catch (Exception e) {
-            System.out.println("Unexpected error: " + e.getMessage());
+            System.out.println("JWT verification failed: " + e.getMessage());
             SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private UserPrincipal validateAndParseToken(String token) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        String keyId = signedJWT.getHeader().getKeyID();
+        if (keyId == null) {
+            throw new Exception("Token missing key ID");
+        }
+
+        // Get the JWK for verification
+        OctetKeyPair jwk = jwksClient.getJWK(keyId);
+
+        // Create verifier
+        JWSVerifier verifier = new Ed25519Verifier(jwk);
+
+        // Verify signature
+        if (!signedJWT.verify(verifier)) {
+            throw new Exception("Invalid token signature");
+        }
+
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+        // Verify issuer
+        if (!expectedIssuer.equals(claims.getIssuer())) {
+            throw new Exception("Invalid issuer");
+        }
+
+        // Verify expiration
+        if (claims.getExpirationTime() != null &&
+            claims.getExpirationTime().getTime() < System.currentTimeMillis()) {
+            throw new Exception("Token expired");
+        }
+
+        // Extract user information
+        return UserPrincipal.builder()
+            .id(claims.getSubject())
+            .email(claims.getStringClaim("email"))
+            .name(claims.getStringClaim("name"))
+            .image(claims.getStringClaim("image"))
+            .emailVerified(claims.getBooleanClaim("emailVerified"))
+            .roles(extractRoles(claims))
+            .build();
+    }
+
+    private List<String> extractRoles(JWTClaimsSet claims) {
+        try {
+            return claims.getStringListClaim("roles");
+        } catch (Exception e) {
+            System.out.println("No roles found in token, using default role");
+            return List.of("USER");
+        }
     }
 }

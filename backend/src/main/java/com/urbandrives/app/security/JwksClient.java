@@ -1,11 +1,9 @@
 package com.urbandrives.app.security;
 
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,19 +15,21 @@ public class JwksClient {
 
     private final RestTemplate restTemplate;
     private final String jwksUrl;
-    private final Map<String, PublicKey> keyCache = new HashMap<>();
+    private final Map<String, OctetKeyPair> keyCache = new ConcurrentHashMap<>();
 
-    public JwksClient() {
+    public JwksClient(@Value("${app.jwt.jwks-url}") String jwksUrl) {
         this.restTemplate = new RestTemplate();
-        this.jwksUrl = "http://localhost:3000/api/auth/jwks";
+        this.jwksUrl = jwksUrl;
     }
 
-    public PublicKey getPublicKey(String keyId) {
+    public OctetKeyPair getJWK(String keyId) {
         if (keyCache.containsKey(keyId)) {
+            System.out.println("Using cached JWK for keyId: " + keyId);
             return keyCache.get(keyId);
         }
 
         try {
+            System.out.println("Fetching JWKS from: " + jwksUrl);
             String jwksJson = restTemplate.getForObject(jwksUrl, String.class);
             JWKSet jwkSet = JWKSet.parse(jwksJson);
 
@@ -38,18 +38,18 @@ public class JwksClient {
                 throw new RuntimeException("Unable to find key with ID: " + keyId);
             }
 
+            keyCache.put(keyId, jwk);
+            System.out.println("Cached JWK for keyId: " + keyId);
 
-            byte[] publicKeyBytes = jwk.getDecodedX();
-
-
-            PublicKey publicKey = KeyFactory.getInstance("Ed25519").generatePublic(
-                new X509EncodedKeySpec(publicKeyBytes)
-            );
-
-            keyCache.put(keyId, publicKey);
-            return publicKey;
+            return jwk;
         } catch (Exception e) {
-            throw new RuntimeException("Error getting public key from JWKS endpoint: " + e.getMessage(), e);
+            System.err.println("Error fetching JWK from JWKS endpoint: " + e.getMessage());
+            throw new RuntimeException("Error getting JWK from JWKS endpoint: " + e.getMessage(), e);
         }
+    }
+
+    public void clearCache() {
+        keyCache.clear();
+        System.out.println("JWKS key cache cleared");
     }
 }
