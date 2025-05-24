@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
@@ -44,7 +44,7 @@ interface BookingFormData {
   notes: string
 }
 
-export default function BookingPage() {
+ function BookingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -413,5 +413,21 @@ export default function BookingPage() {
         </div>
       </div>
     </div>
+  )
+}
+export default function BookingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 text-gray-400 mb-4 animate-pulse">
+            <CheckCircle className="h-full w-full" />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BookingPage />
+    </Suspense>
   )
 }

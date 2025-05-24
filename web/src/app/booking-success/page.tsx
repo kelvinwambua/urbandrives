@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
@@ -18,7 +18,8 @@ import {
   Home
 } from "lucide-react"
 
-const API_BASE_URL = "http://localhost:3000/api"
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_APP_URL}/api`
+const APP_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}`
 
 interface BookingDetails {
   id: number
@@ -41,13 +42,10 @@ interface BookingDetails {
   createdAt: string
 }
 
-export default function BookingSuccessPage() {
+function BookingSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const bookingId = searchParams?.get('bookingId')
-  
-const API_BASE_URL =`${process.env.NEXT_PUBLIC_APP_URL}/api`
-const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
   
   const [booking, setBooking] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
@@ -145,7 +143,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -171,7 +168,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-  
               <div>
                 <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                   <Car className="h-4 w-4" />
@@ -210,7 +206,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
                 </p>
               </div>
 
-
               <div>
                 <h3 className="font-medium text-gray-900 mb-3">Customer Information</h3>
                 <div className="space-y-2">
@@ -227,7 +222,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
                 </div>
               </div>
 
-
               {booking.notes && (
                 <div>
                   <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
@@ -238,7 +232,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
                 </div>
               )}
 
-   
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium">Total Amount</span>
@@ -247,7 +240,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
               </div>
             </CardContent>
           </Card>
-
 
           <Card className="mb-6">
             <CardHeader>
@@ -262,7 +254,6 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
               </div>
             </CardContent>
           </Card>
-
 
           <div className="flex gap-4">
             <Button onClick={() => router.push('/cars')} className="flex-1">
@@ -281,5 +272,22 @@ const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BookingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 text-gray-400 mb-4 animate-pulse">
+            <CheckCircle className="h-full w-full" />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BookingSuccessContent />
+    </Suspense>
   )
 }
