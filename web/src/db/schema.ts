@@ -56,6 +56,8 @@ export const jwks = mysqlTable("jwks", {
 export const payment = mysqlTable("payment", {
   paymentId: int("payment_id").primaryKey().autoincrement(),
   userId: varchar("user_id", { length: 36 }).notNull(),
+  bookingId: varchar("booking_id", { length: 36 }).notNull(),
+  carId: varchar("car_id", { length: 36 }).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
   paymentDate: timestamp("payment_date").defaultNow()
