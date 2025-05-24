@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, timestamp, boolean, int } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, text, timestamp, boolean, int, decimal } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
 					id: varchar('id', { length: 36 }).primaryKey(),
@@ -52,3 +52,19 @@ export const jwks = mysqlTable("jwks", {
  privateKey: text('private_key').notNull(),
  createdAt: timestamp('created_at').notNull()
 				});
+
+export const payment = mysqlTable("payment", {
+  paymentId: int("payment_id").primaryKey().autoincrement(),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
+  paymentDate: timestamp("payment_date").defaultNow()
+  });
+
+  export const image = mysqlTable("image", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  name: varchar("name", { length: 256 }).notNull(),
+  url: varchar("url", {length: 1024 } ).notNull(), 
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  });
