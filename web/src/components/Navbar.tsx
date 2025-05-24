@@ -145,13 +145,13 @@ const Navbar = () => {
                   asChild
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-50"
                 >
-                  <Link href="/sign-in">Sign in</Link>
+                  <Link href="/signin">Sign in</Link>
                 </Button>
                 <Button 
                   asChild
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm"
                 >
-                  <Link href="/sign-up">Sign up</Link>
+                  <Link href="/signup">Sign up</Link>
                 </Button>
               </>
             )}
