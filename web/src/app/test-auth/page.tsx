@@ -63,10 +63,17 @@ export default function AuthTestPage() {
 
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    console.log(token)
+    const responseToken = await fetch(`${API_BASE_URL}/auth/token`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      const response = await fetch(`https://urbandrives-6eb940e4a23c.herokuapp.com/auth/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${responseToken}`,
           'Content-Type': 'application/json',
         },
       })
@@ -95,7 +102,7 @@ export default function AuthTestPage() {
 
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/test`, {
+      const response = await fetch(`https://urbandrives-6eb940e4a23c.herokuapp.com/auth/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
