@@ -18,5 +18,10 @@ export const auth = betterAuth({
     },
     plugins: [ 
         jwt(), 
-    ] 
+    ],
+    trustedOrigins  :[
+        "http://localhost:3000", 
+        "https://urbandrives.vercel.app", 
+    ]
+        
 });
