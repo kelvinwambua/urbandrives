@@ -20,50 +20,37 @@ import {
   FormMessage,
 } from "~/components/ui/form"
 import { useState } from "react"
-import { Loader2, LockIcon, Mail, User, AtSign } from "lucide-react"
-import { aW } from "node_modules/better-auth/dist/shared/better-auth.qzSbzJNO"
+import { Loader2, LockIcon, AtSign, Eye, EyeOff } from "lucide-react"
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
+  password: z.string().min(1, {
+    message: "Password is required.",
   }),
-  confirmPassword: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-})
-.refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const [loading, setLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   })
 
   const onSubmit = async (values: FormValues) => {
     try {
-      await authClient.signUp.email({
+      await authClient.signIn.email({
         email: values.email,
         password: values.password,
-        name: values.name,
         callbackURL: "/"
       },{
         onRequest:() => {
@@ -71,13 +58,13 @@ export default function SignUpPage() {
         },
         onSuccess:() => {
           setLoading(false)
-          toast.success("Account Created Successfully", {
+          toast.success("Welcome back!", {
             description: "Redirecting to dashboard",
           })
         },
         onError:(ctx) => {
           setLoading(false)
-          toast.error("Registration Failed", {
+          toast.error("Sign in failed", {
             description: ctx.error.message,
           })
         }
@@ -90,7 +77,7 @@ export default function SignUpPage() {
     }
   }
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true)
     try {
 
@@ -124,47 +111,24 @@ export default function SignUpPage() {
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <div className="flex items-center justify-center mb-4">
-          
-                <Image
-                  src="/Logo_With_Text.png"
-                  alt="Urban Drives"
-                  width={120}
-                  height={120}
-                  className="text-white"
-                />
-             
+           <Image
+                     src="/Logo_With_Text.png"
+                     alt="Urban Drives"
+                     width={120}
+                     height={120}
+                     className="text-white"
+                   />
+                
             </div>
-            <CardTitle className="text-2xl font-semibold">Create your account</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Welcome back</CardTitle>
             <CardDescription>
-              Join Urban Drives and start your journey
+              Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="name">Full Name</Label>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                          <Input 
-                            id="name" 
-                            placeholder="Jane Doe"
-                            className="pl-10"
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <FormField
                   control={form.control}
                   name="email"
@@ -193,40 +157,29 @@ export default function SignUpPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <Label htmlFor="password">Password</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <a href="/forgot-password" className="text-sm text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline">
+                          Forgot password?
+                        </a>
+                      </div>
                       <FormControl>
                         <div className="relative">
                           <LockIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                           <Input 
                             id="password" 
-                            type="password"
-                            placeholder="Create a strong password"
-                            className="pl-10"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="pl-10 pr-10"
                             {...field} 
                           />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <FormControl>
-                        <div className="relative">
-                          <LockIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                          <Input 
-                            id="confirmPassword" 
-                            type="password"
-                            placeholder="Confirm your password"
-                            className="pl-10"
-                            {...field} 
-                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 hover:text-gray-600"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -240,7 +193,7 @@ export default function SignUpPage() {
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {loading ? "Creating account..." : "Create account"}
+                  {loading ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
             </Form>
@@ -260,7 +213,7 @@ export default function SignUpPage() {
               variant="outline" 
               className="w-full"
               type="button"
-              onClick={handleGoogleSignUp}
+              onClick={handleGoogleSignIn}
               disabled={isGoogleLoading}
             >
               {isGoogleLoading ? (
@@ -269,14 +222,14 @@ export default function SignUpPage() {
                 <GoogleIcon />
               )}
               <span className="ml-2">
-                {isGoogleLoading ? "Connecting..." : "Sign up with Google"}
+                {isGoogleLoading ? "Connecting..." : "Sign in with Google"}
               </span>
             </Button>
             
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <a href="/signin" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline">
-                Sign in
+              Don't have an account?{" "}
+              <a href="/signup" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline">
+                Sign up
               </a>
             </div>
           </CardContent>

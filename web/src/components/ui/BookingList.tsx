@@ -4,7 +4,7 @@ type Booking = {
   id: string;
   item: string;
   status: string;
-  bookedAt: string; // ISO string for display
+  bookedAt: string; 
   userName: string;
 };
 
