@@ -13,13 +13,19 @@ import java.util.List;
 @Repository
 public interface CarRepository extends JpaRepository<Car, Long> {
     List<Car> findByStatus(CarStatus status);
-    //for finding cars based on availability
+
 
     List<Car> findByMakeContainingIgnoreCase(String make);
-    //finding cars based on their make
+
 
     List<Car> findByModelContainingIgnoreCase(String model);
-    //finding cars based on their models
+
+
+    boolean existsByLicensePlate(String licensePlate);
+
+
+    boolean existsByLicensePlateAndIdNot(String licensePlate, Long id);
+
 
     @Query("SELECT c FROM Car c WHERE c.status = 'AVAILABLE' AND c.id NOT IN " +
         "(SELECT b.car.id FROM Booking b WHERE b.status IN ('CONFIRMED', 'ACTIVE') " +
@@ -27,7 +33,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
         "(:endDate BETWEEN b.startDate AND b.endDate) OR " +
         "(b.startDate BETWEEN :startDate AND :endDate)))")
 
-    //finding cars for a specific time window
     List<Car> findAvailableCars(@Param("startDate") LocalDate startDate,
                                 @Param("endDate") LocalDate endDate);
 }

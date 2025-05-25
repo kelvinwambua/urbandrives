@@ -56,6 +56,22 @@ public class CarService {
         return convertToDTO(savedCar);
     }
 
+    public boolean deleteCar(Long id) {
+        if (carRepository.existsById(id)) {
+            carRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean existsByLicensePlate(String licensePlate) {
+        return carRepository.existsByLicensePlate(licensePlate);
+    }
+
+    public boolean existsByLicensePlateAndNotId(String licensePlate, Long id) {
+        return carRepository.existsByLicensePlateAndIdNot(licensePlate, id);
+    }
+
     private CarDTO convertToDTO(Car car) {
         CarDTO dto = new CarDTO();
         dto.setId(car.getId());
