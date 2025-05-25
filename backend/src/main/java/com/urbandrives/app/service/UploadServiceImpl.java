@@ -44,7 +44,7 @@ public class UploadServiceImpl implements UploadService {
             String publicId = System.currentTimeMillis() + "_" +
                 (originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "file");
 
-            // Fix the transformation parameters - don't nest ObjectUtils.asMap
+
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap(
                     "resource_type", "auto",
