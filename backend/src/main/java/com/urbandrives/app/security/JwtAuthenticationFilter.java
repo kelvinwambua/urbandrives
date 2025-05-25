@@ -94,7 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Verify issuer
         if (!expectedIssuer.equals(claims.getIssuer())) {
-            throw new Exception("Invalid issuer");
+            throw new Exception("Invalid issuer: expected " + expectedIssuer + " but got " + claims.getIssuer());
         }
 
         // Verify expiration
@@ -103,10 +103,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw new Exception("Token expired");
         }
 
-        // Check if user is banned
-        Boolean banned = claims.getBooleanClaim("banned");
-        if (banned != null && banned) {
-            Date banExpires = claims.getDateClaim("banExpires");
+        // Check if user is banned - handle null properly
+        Boolean banned = getBooleanClaimSafe(claims, "banned");
+        if (Boolean.TRUE.equals(banned)) { // Only check if explicitly true
+            Date banExpires = getDateClaimSafe(claims, "banExpires");
             if (banExpires == null || banExpires.getTime() > System.currentTimeMillis()) {
                 throw new Exception("User is banned");
             }
@@ -118,14 +118,74 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             .email(claims.getStringClaim("email"))
             .name(claims.getStringClaim("name"))
             .image(claims.getStringClaim("image"))
-            .emailVerified(claims.getBooleanClaim("emailVerified"))
+            .emailVerified(getBooleanClaimSafe(claims, "emailVerified"))
             .roles(extractRoles(claims))
-            .createdAt(claims.getDateClaim("createdAt"))
-            .updatedAt(claims.getDateClaim("updatedAt"))
+            .createdAt(getDateClaimSafe(claims, "createdAt"))
+            .updatedAt(getDateClaimSafe(claims, "updatedAt"))
             .banned(banned)
             .banReason(claims.getStringClaim("banReason"))
-            .banExpires(claims.getDateClaim("banExpires"))
+            .banExpires(getDateClaimSafe(claims, "banExpires"))
             .build();
+    }
+
+    // Updated helper method to properly handle null values
+    private Boolean getBooleanClaimSafe(JWTClaimsSet claims, String claimName) {
+        try {
+            Object claimValue = claims.getClaim(claimName);
+            if (claimValue == null) {
+                return null; // Explicitly return null for null values
+            }
+
+            if (claimValue instanceof Boolean) {
+                return (Boolean) claimValue;
+            }
+
+            if (claimValue instanceof String) {
+                String stringValue = (String) claimValue;
+                if ("null".equalsIgnoreCase(stringValue)) {
+                    return null;
+                }
+                return Boolean.parseBoolean(stringValue);
+            }
+
+            return null;
+        } catch (Exception e) {
+            System.out.println("Error parsing boolean claim '" + claimName + "': " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Date getDateClaimSafe(JWTClaimsSet claims, String claimName) {
+        try {
+            Object claimValue = claims.getClaim(claimName);
+            if (claimValue == null) {
+                return null;
+            }
+
+
+            if (claimValue instanceof Date) {
+                return (Date) claimValue;
+            }
+
+
+            if (claimValue instanceof String) {
+                String dateString = (String) claimValue;
+                if ("null".equalsIgnoreCase(dateString)) {
+                    return null;
+                }
+                return Date.from(java.time.Instant.parse(dateString));
+            }
+
+
+            if (claimValue instanceof Number) {
+                return new Date(((Number) claimValue).longValue() * 1000);
+            }
+
+            return null;
+        } catch (Exception e) {
+            System.out.println("Error parsing date claim '" + claimName + "': " + e.getMessage());
+            return null;
+        }
     }
     private List<String> extractRoles(JWTClaimsSet claims) {
         try {
