@@ -23,7 +23,7 @@ public class EmailTestController {
             @RequestParam(defaultValue = "This is a test email sent from the UrbanDrives backend.") String text) {
 
         try {
-            boolean sent = emailService.sendSimpleEmail(to, subject, text);
+            boolean sent = emailService.sendHtmlEmail(to, subject, text);
             if (sent) {
                 return new ResponseEntity<>("Test email sent successfully to " + to, HttpStatus.OK);
             } else {

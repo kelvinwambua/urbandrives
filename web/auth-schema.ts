@@ -4,10 +4,14 @@ export const user = mysqlTable("user", {
 					id: varchar('id', { length: 36 }).primaryKey(),
 					name: text('name').notNull(),
  email: varchar('email', { length: 255 }).notNull().unique(),
- emailVerified: boolean('email_verified').notNull(),
+ emailVerified: boolean('email_verified').$defaultFn(() => false).notNull(),
  image: text('image'),
- createdAt: timestamp('created_at').notNull(),
- updatedAt: timestamp('updated_at').notNull()
+ createdAt: timestamp('created_at').$defaultFn(() => /* @__PURE__ */ new Date()).notNull(),
+ updatedAt: timestamp('updated_at').$defaultFn(() => /* @__PURE__ */ new Date()).notNull(),
+ role: text('role'),
+ banned: boolean('banned'),
+ banReason: text('ban_reason'),
+ banExpires: timestamp('ban_expires')
 				});
 
 export const session = mysqlTable("session", {
@@ -18,7 +22,8 @@ export const session = mysqlTable("session", {
  updatedAt: timestamp('updated_at').notNull(),
  ipAddress: text('ip_address'),
  userAgent: text('user_agent'),
- userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' })
+ userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
+ impersonatedBy: text('impersonated_by')
 				});
 
 export const account = mysqlTable("account", {
@@ -42,8 +47,8 @@ export const verification = mysqlTable("verification", {
 					identifier: text('identifier').notNull(),
  value: text('value').notNull(),
  expiresAt: timestamp('expires_at').notNull(),
- createdAt: timestamp('created_at'),
- updatedAt: timestamp('updated_at')
+ createdAt: timestamp('created_at').$defaultFn(() => /* @__PURE__ */ new Date()),
+ updatedAt: timestamp('updated_at').$defaultFn(() => /* @__PURE__ */ new Date())
 				});
 
 export const jwks = mysqlTable("jwks", {

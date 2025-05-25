@@ -1,6 +1,7 @@
 package com.urbandrives.app.security;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -102,6 +103,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw new Exception("Token expired");
         }
 
+        // Check if user is banned
+        Boolean banned = claims.getBooleanClaim("banned");
+        if (banned != null && banned) {
+            Date banExpires = claims.getDateClaim("banExpires");
+            if (banExpires == null || banExpires.getTime() > System.currentTimeMillis()) {
+                throw new Exception("User is banned");
+            }
+        }
+
         // Extract user information
         return UserPrincipal.builder()
             .id(claims.getSubject())
@@ -110,14 +120,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             .image(claims.getStringClaim("image"))
             .emailVerified(claims.getBooleanClaim("emailVerified"))
             .roles(extractRoles(claims))
+            .createdAt(claims.getDateClaim("createdAt"))
+            .updatedAt(claims.getDateClaim("updatedAt"))
+            .banned(banned)
+            .banReason(claims.getStringClaim("banReason"))
+            .banExpires(claims.getDateClaim("banExpires"))
             .build();
     }
-
     private List<String> extractRoles(JWTClaimsSet claims) {
         try {
-            return claims.getStringListClaim("roles");
-        } catch (Exception e) {
+
+            List<String> rolesList = claims.getStringListClaim("roles");
+            if (rolesList != null && !rolesList.isEmpty()) {
+                return rolesList;
+            }
+
+
+            String singleRole = claims.getStringClaim("role");
+            if (singleRole != null) {
+                return List.of(singleRole.toUpperCase());
+            }
+
+
             System.out.println("No roles found in token, using default role");
+            return List.of("USER");
+        } catch (Exception e) {
+            System.out.println("Error extracting roles from token: " + e.getMessage());
             return List.of("USER");
         }
     }

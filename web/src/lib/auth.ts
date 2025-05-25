@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { jwt } from "better-auth/plugins";
+import { admin, jwt } from "better-auth/plugins";
  // your drizzle instance
 import {db} from "~/index"; // Adjust the import according to your project structure
 export const auth = betterAuth({
@@ -17,7 +17,8 @@ export const auth = betterAuth({
         }, 
     },
     plugins: [ 
-        jwt(), 
+        jwt(),
+        admin()  
     ],
     trustedOrigins  :[
         "http://localhost:3000", 
