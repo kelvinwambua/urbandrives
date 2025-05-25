@@ -29,6 +29,9 @@ public class BookingService {
     @Autowired
     private CarService carService;
 
+    @Autowired
+    private EmailService emailService;
+
     public BookingResponseDTO createBooking(BookingRequestDTO request) {
         // Validate dates
         if (request.getEndDate().isBefore(request.getStartDate())) {
@@ -71,6 +74,15 @@ public class BookingService {
 
 
         Booking savedBooking = bookingRepository.save(booking);
+        emailService.sendBookingConfirmationEmail(
+                savedBooking.getCustomerEmail(),
+                savedBooking.getCustomerName(),
+                savedBooking.getCar().getMake() + " " + savedBooking.getCar().getModel() + " (" + savedBooking.getCar().getLicensePlate() + ")",
+                savedBooking.getStartDate().toString(),
+                savedBooking.getEndDate().toString(),
+                savedBooking.getTotalAmount().toPlainString(), // Convert BigDecimal to String for email
+                savedBooking.getId()
+        );
         return convertToResponseDTO(savedBooking);
     }
 
@@ -98,8 +110,16 @@ public class BookingService {
         }
 
         Booking booking = bookingOpt.get();
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(status);
         Booking savedBooking = bookingRepository.save(booking);
+        if (oldStatus != BookingStatus.CANCELLED && status == BookingStatus.CANCELLED) {
+            emailService.sendBookingCancellationEmail(
+                    savedBooking.getCustomerEmail(),
+                    savedBooking.getCustomerName(),
+                    savedBooking.getId()
+            );
+        }
         return convertToResponseDTO(savedBooking);
     }
 
@@ -110,6 +130,17 @@ public class BookingService {
         }
 
         Booking booking = bookingOpt.get();
+        if (booking.getStatus() != BookingStatus.CANCELLED) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            Booking savedBooking = bookingRepository.save(booking);
+
+            emailService.sendBookingCancellationEmail(
+                    savedBooking.getCustomerEmail(),
+                    savedBooking.getCustomerName(),
+                    savedBooking.getId()
+            );
+        }
+
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
     }
