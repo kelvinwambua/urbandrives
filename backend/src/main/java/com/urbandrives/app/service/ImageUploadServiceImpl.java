@@ -10,11 +10,11 @@ import java.io.IOException;
 import java.util.Map;
 
 @Service
-public class UploadServiceImpl implements UploadService {
+public class ImageUploadServiceImpl implements UploadService {
 
     private final Cloudinary cloudinary;
 
-    public UploadServiceImpl(@Value("${CLOUDINARY_URL:}") String cloudinaryUrl) {
+    public ImageUploadServiceImpl(@Value("${CLOUDINARY_URL:}") String cloudinaryUrl) {
         if (cloudinaryUrl.isEmpty()) {
             throw new RuntimeException("CLOUDINARY_URL environment variable is not set");
         }

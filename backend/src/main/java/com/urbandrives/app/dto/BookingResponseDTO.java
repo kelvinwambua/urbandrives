@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class BookingResponseDTO {
+public class BookingResponseDTO  extends BaseDTO{
     private Long id;
     private CarDTO car;
     private String customerName;
@@ -16,8 +16,8 @@ public class BookingResponseDTO {
     private BigDecimal totalAmount;
     private BookingStatus status;
     private String notes;
-    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
 
     // Constructors
     public BookingResponseDTO() {}

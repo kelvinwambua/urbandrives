@@ -4,7 +4,7 @@ import com.urbandrives.app.entity.CarStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class CarDTO {
+public class CarDTO extends BaseDTO{
     private Long id;
     private String make;
     private String model;

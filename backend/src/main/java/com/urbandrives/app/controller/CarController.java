@@ -5,6 +5,7 @@ import com.urbandrives.app.entity.Car;
 import com.urbandrives.app.service.CarService;
 import com.urbandrives.app.service.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class CarController {
     @Autowired
     private CarService carService;
 
+    @Qualifier("imageUploadServiceImpl")
     @Autowired
     private UploadService uploadService;
 
