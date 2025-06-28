@@ -92,7 +92,7 @@ public class BookingService {
 
 
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
-                request.getCarId(), request.getStartDate(), request.getEndDate()
+            request.getCarId(), request.getStartDate(), request.getEndDate()
         );
 
         if (!conflicts.isEmpty()) {
@@ -134,16 +134,16 @@ public class BookingService {
 
 
             emailService.sendBookingConfirmationEmail(
-                    savedBooking.getCustomerEmail(),
-                    savedBooking.getCustomerName(),
-                    savedBooking.getCar().getMake() + " " + savedBooking.getCar().getModel() + " (" + savedBooking.getCar().getLicensePlate() + ")",
-                    formattedStartDate,
-                    formattedEndDate,
-                    savedBooking.getTotalAmount().toPlainString(),
-                    savedBooking.getId(),
-                    pdfBytes,
-                    attachmentFileName,
-                    attachmentContentType
+                savedBooking.getCustomerEmail(),
+                savedBooking.getCustomerName(),
+                savedBooking.getCar().getMake() + " " + savedBooking.getCar().getModel() + " (" + savedBooking.getCar().getLicensePlate() + ")",
+                formattedStartDate,
+                formattedEndDate,
+                savedBooking.getTotalAmount().toPlainString(),
+                savedBooking.getId(),
+                pdfBytes,
+                attachmentFileName,
+                attachmentContentType
             );
         } catch (IOException e) {
 
@@ -162,19 +162,19 @@ public class BookingService {
 
     public List<BookingResponseDTO> getAllBookings() {
         return bookingRepository.findAll().stream()
-                .map(this::convertToResponseDTO)
-                .collect(Collectors.toList());
+            .map(this::convertToResponseDTO)
+            .collect(Collectors.toList());
     }
 
     public List<BookingResponseDTO> getBookingsByEmail(String email) {
         return bookingRepository.findByCustomerEmail(email).stream()
-                .map(this::convertToResponseDTO)
-                .collect(Collectors.toList());
+            .map(this::convertToResponseDTO)
+            .collect(Collectors.toList());
     }
 
     public Optional<BookingResponseDTO> getBookingById(Long id) {
         return bookingRepository.findById(id)
-                .map(this::convertToResponseDTO);
+            .map(this::convertToResponseDTO);
     }
 
     @Transactional
@@ -192,9 +192,9 @@ public class BookingService {
 
         if (oldStatus != BookingStatus.CANCELLED && status == BookingStatus.CANCELLED) {
             emailService.sendBookingCancellationEmail(
-                    savedBooking.getCustomerEmail(),
-                    savedBooking.getCustomerName(),
-                    savedBooking.getId()
+                savedBooking.getCustomerEmail(),
+                savedBooking.getCustomerName(),
+                savedBooking.getId()
             );
         }
         return convertToResponseDTO(savedBooking);
@@ -213,9 +213,9 @@ public class BookingService {
             Booking savedBooking = bookingRepository.save(booking);
 
             emailService.sendBookingCancellationEmail(
-                    savedBooking.getCustomerEmail(),
-                    savedBooking.getCustomerName(),
-                    savedBooking.getId()
+                savedBooking.getCustomerEmail(),
+                savedBooking.getCustomerName(),
+                savedBooking.getId()
             );
         }
     }

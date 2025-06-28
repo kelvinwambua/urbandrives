@@ -25,14 +25,12 @@ public class EmailService {
                                  byte[] attachmentBytes, String attachmentFileName, String attachmentContentType) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            // true indicates multipart message (for attachment), StandardCharsets.UTF_8 for encoding
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
             helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
-
-            // Add the PDF attachment if bytes are provided
+            helper.setText(htmlContent, true);
             if (attachmentBytes != null && attachmentBytes.length > 0) {
                 ByteArrayDataSource dataSource = new ByteArrayDataSource(attachmentBytes, attachmentContentType);
                 helper.addAttachment(attachmentFileName, dataSource);
@@ -198,7 +196,7 @@ public class EmailService {
 
                     <div class="content">
                         <div class="greeting">
-                            Hello %s! 
+                            Hello %s!
                         </div>
 
                         <p>Thank you for choosing UrbanDrives! We're excited to serve you. Here are your booking details:</p>

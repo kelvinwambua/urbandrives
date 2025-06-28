@@ -32,31 +32,40 @@ public class CarController {
     public ResponseEntity<List<CarDTO>> getAllCars(@RequestParam(required = false) String location) {
         List<CarDTO> cars;
         if (location != null && !location.trim().isEmpty()) {
-
             cars = carService.searchCarsByLocation(location);
         } else {
-
             cars = carService.getAllCars();
         }
         return ResponseEntity.ok(cars);
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<CarDTO>> getAvailableCars() {
-        List<CarDTO> cars = carService.getAvailableCars();
+    public ResponseEntity<List<CarDTO>> getAvailableCars(@RequestParam(required = false) String location) {
+        List<CarDTO> cars;
+        if (location != null && !location.trim().isEmpty()) {
+            cars = carService.getAvailableCarsByLocation(location);
+        } else {
+            cars = carService.getAvailableCars();
+        }
         return ResponseEntity.ok(cars);
     }
 
     @GetMapping("/available/dates")
     public ResponseEntity<List<CarDTO>> getAvailableCarsForDates(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+        @RequestParam(required = false) String location) {
 
         if (endDate.isBefore(startDate)) {
             return ResponseEntity.badRequest().build();
         }
 
-        List<CarDTO> cars = carService.getAvailableCarsForDates(startDate, endDate);
+        List<CarDTO> cars;
+        if (location != null && !location.trim().isEmpty()) {
+            cars = carService.getAvailableCarsForDatesAndLocation(startDate, endDate, location);
+        } else {
+            cars = carService.getAvailableCarsForDates(startDate, endDate);
+        }
         return ResponseEntity.ok(cars);
     }
 

@@ -19,8 +19,6 @@ public class CarService {
     @Autowired
     private CarRepository carRepository;
 
-
-
     public List<CarDTO> getAllCars() {
         return carRepository.findAll().stream()
             .map(this::convertToDTO)
@@ -33,8 +31,20 @@ public class CarService {
             .collect(Collectors.toList());
     }
 
+    public List<CarDTO> getAvailableCarsByLocation(String location) {
+        return carRepository.findByStatusAndLocationContainingIgnoreCase(CarStatus.AVAILABLE, location).stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
     public List<CarDTO> getAvailableCarsForDates(LocalDate startDate, LocalDate endDate) {
         return carRepository.findAvailableCars(startDate, endDate).stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
+    public List<CarDTO> getAvailableCarsForDatesAndLocation(LocalDate startDate, LocalDate endDate, String location) {
+        return carRepository.findAvailableCarsForDatesAndLocation(startDate, endDate, location).stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
     }
@@ -59,8 +69,8 @@ public class CarService {
             return getAllCars();
         }
         return carRepository.findByLocationContainingIgnoreCase(location).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
 
     public CarDTO saveCar(Car car) {
@@ -83,8 +93,6 @@ public class CarService {
     public boolean existsByLicensePlateAndNotId(String licensePlate, Long id) {
         return carRepository.existsByLicensePlateAndIdNot(licensePlate, id);
     }
-
-
 
     private CarDTO convertToDTO(Car car) {
         CarDTO dto = new CarDTO();

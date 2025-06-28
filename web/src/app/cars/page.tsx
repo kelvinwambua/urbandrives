@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
@@ -30,8 +31,9 @@ import { cn } from "~/lib/utils"
 import type { DateRange } from "react-day-picker"
 import Image from "next/image"
 
-const API_BASE_URL =`${process.env.NEXT_PUBLIC_APP_URL}/api`
-const APP_BASE_URL =`${process.env.NEXT_PUBLIC_API_URL}`
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_APP_URL}/api`
+const APP_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}`
+
 interface Car {
   id: number
   make: string
@@ -62,53 +64,58 @@ const getStatusColor = (status: string) => {
   }
 }
 
-
-
 export default function CarsListingPage() {
+  const searchParams = useSearchParams()
   const [cars, setCars] = useState<Car[]>([])
   const [filteredCars, setFilteredCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [locationQuery, setLocationQuery] = useState("")
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [sortBy, setSortBy] = useState("price-low")
   const [statusFilter, setStatusFilter] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
 
-const fetchToken = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/token`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch token: ${response.status}`)
-    }
+  const fetchToken = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/token`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch token: ${response.status}`)
+      }
 
-    const tokenData = await response.json()
-    return tokenData.token 
-  } catch (error) {
-    console.error('Error fetching token:', error)
-    throw error
+      const tokenData = await response.json()
+      return tokenData.token 
+    } catch (error) {
+      console.error('Error fetching token:', error)
+      throw error
+    }
   }
-}
 
   const fetchCars = async () => {
     try {
       setLoading(true)
       const token = await fetchToken()
       
-      let url = `${API_BASE_URL}/api/cars`
+      let url = ''
       
-     
       if (dateRange?.from && dateRange?.to) {
         const startDate = format(dateRange.from, 'yyyy-MM-dd')
         const endDate = format(dateRange.to, 'yyyy-MM-dd')
-        url = `${APP_BASE_URL}api/cars/available/dates?startDate=${startDate}&endDate=${endDate}`
+        url = `${APP_BASE_URL}/api/cars/available/dates?startDate=${startDate}&endDate=${endDate}`
+        if (locationQuery) {
+          url += `&location=${encodeURIComponent(locationQuery)}`
+        }
       } else {
         url = `${APP_BASE_URL}/api/cars/available`
+        if (locationQuery) {
+          url += `?location=${encodeURIComponent(locationQuery)}`
+        }
       }
 
       const response = await fetch(url, {
@@ -144,7 +151,7 @@ const fetchToken = async () => {
 
     try {
       const token = await fetchToken()
-      const response = await fetch(`${API_BASE_URL}/api/cars/search?query=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${APP_BASE_URL}/api/cars/search?query=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -158,7 +165,6 @@ const fetchToken = async () => {
       }
     } catch (error) {
       console.error('Error searching cars:', error)
-     
       const filtered = cars.filter(car => 
         car.make.toLowerCase().includes(query.toLowerCase()) ||
         car.model.toLowerCase().includes(query.toLowerCase()) ||
@@ -171,12 +177,10 @@ const fetchToken = async () => {
   const applySortAndFilter = () => {
     let filtered = [...cars]
 
- 
     if (statusFilter !== "all") {
       filtered = filtered.filter(car => car.status === statusFilter)
     }
 
-  
     if (searchQuery.trim()) {
       filtered = filtered.filter(car => 
         car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -184,7 +188,6 @@ const fetchToken = async () => {
         car.color.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
-
 
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -207,11 +210,34 @@ const fetchToken = async () => {
   }
 
   useEffect(() => {
-    fetchCars()
-  }, [dateRange])
+    const location = searchParams.get('location')
+    const pickupDate = searchParams.get('pickupDate')
+    const returnDate = searchParams.get('returnDate')
+
+    if (location) {
+      setLocationQuery(location)
+    }
+
+    if (pickupDate && returnDate) {
+      const pickup = new Date(pickupDate)
+      const returnD = new Date(returnDate)
+      setDateRange({
+        from: pickup,
+        to: returnD
+      })
+    }
+  }, [searchParams])
 
   useEffect(() => {
-    applySortAndFilter()
+    fetchCars()
+  }, [dateRange, locationQuery])
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      searchCars(searchQuery)
+    } else {
+      applySortAndFilter()
+    }
   }, [searchQuery, sortBy, statusFilter, cars])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -219,18 +245,27 @@ const fetchToken = async () => {
     searchCars(searchQuery)
   }
 
+  const handleLocationSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    fetchCars()
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
- 
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Available Cars</h1>
               <p className="text-gray-600 mt-1">Find the perfect car for your journey</p>
+              {locationQuery && (
+                <div className="flex items-center gap-2 mt-2">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">Showing results for: {locationQuery}</span>
+                </div>
+              )}
             </div>
             
-
             <div className="flex flex-col sm:flex-row gap-4 lg:w-2/3">
               <form onSubmit={handleSearch} className="flex-1">
                 <div className="relative">
@@ -243,9 +278,20 @@ const fetchToken = async () => {
                   />
                 </div>
               </form>
+
+              <form onSubmit={handleLocationSearch} className="flex-1">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by location..."
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </form>
               
               <div className="flex gap-2">
-       
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -293,7 +339,6 @@ const fetchToken = async () => {
             </div>
           </div>
 
-
           {showFilters && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -333,6 +378,7 @@ const fetchToken = async () => {
                     variant="outline"
                     onClick={() => {
                       setSearchQuery("")
+                      setLocationQuery("")
                       setDateRange(undefined)
                       setSortBy("price-low")
                       setStatusFilter("all")
@@ -354,7 +400,6 @@ const fetchToken = async () => {
         </p>
       </div>
 
- 
       <div className="container mx-auto px-4 pb-12">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -380,15 +425,15 @@ const fetchToken = async () => {
             {filteredCars.map((car) => (
               <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-200 group">
                 <div className="relative">
-                 <Image
-    width={400}
-    height={300} 
-    src={car.imageUrl}
-    alt={`${car.make} ${car.model}`}
-    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-    quality={100} 
-    priority={false}
-  />
+                  <Image
+                    width={400}
+                    height={300} 
+                    src={car.imageUrl}
+                    alt={`${car.make} ${car.model}`}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                    quality={100} 
+                    priority={false}
+                  />
                   <div className="absolute top-3 left-3">
                     <Badge className={getStatusColor(car.status)}>
                       {car.status.toLowerCase()}
@@ -439,14 +484,14 @@ const fetchToken = async () => {
                   <Separator className="my-3" />
 
                   <div className="flex gap-2">
-                   <Button 
-  className="flex-1" 
-  disabled={car.status !== "AVAILABLE"}
-  onClick={() => window.location.href = `/cars/${car.id}`}
->
-  <Eye className="mr-2 h-4 w-4" />
-  View Details
-</Button>
+                    <Button 
+                      className="flex-1" 
+                      disabled={car.status !== "AVAILABLE"}
+                      onClick={() => window.location.href = `/cars/${car.id}`}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </Button>
                     <Button 
                       variant="outline" 
                       size="icon"

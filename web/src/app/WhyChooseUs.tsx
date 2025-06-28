@@ -31,7 +31,7 @@ export default function WhyChooseUs() {
 
     return (
         <section className="py-20 bg-white relative overflow-hidden">
-            {/* Background geometric shapes */}
+     
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-blue-100 to-blue-200 transform rotate-45 rounded-3xl"></div>
                 <div className="absolute bottom-20 left-20 w-48 h-48 bg-gradient-to-br from-indigo-100 to-indigo-200 transform rotate-12 rounded-3xl"></div>
@@ -55,9 +55,9 @@ export default function WhyChooseUs() {
                         </div>
                     </div>
 
-                    {/* Right side - Content */}
+                    
                     <div className="order-1 lg:order-2 space-y-10">
-                        {/* Section header */}
+           
                         <div className="space-y-6">
                             <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                 WHY CHOOSE US
@@ -67,7 +67,7 @@ export default function WhyChooseUs() {
                             </h2>
                         </div>
 
-                        {/* Features list */}
+                
                         <div className="space-y-6">
                             {features.map((feature, index) => (
                                 <div 
@@ -75,12 +75,12 @@ export default function WhyChooseUs() {
                                     className="flex items-start space-x-4 group p-4 rounded-xl hover:bg-gray-50 transition-all duration-200"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
-                                    {/* Icon */}
+                      
                                     <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:from-blue-600 group-hover:to-blue-700 transition-all duration-200 shadow-lg group-hover:shadow-xl">
                                         {feature.icon}
                                     </div>
                                     
-                                    {/* Content */}
+                              
                                     <div className="flex-1 space-y-2 pt-1">
                                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                                             {feature.title}
@@ -93,7 +93,7 @@ export default function WhyChooseUs() {
                             ))}
                         </div>
 
-                        {/* Call to action */}
+                    
                         <div className="pt-6">
                             <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center space-x-2">
                                 <span>Learn More</span>

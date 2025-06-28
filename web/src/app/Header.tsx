@@ -31,8 +31,19 @@ export default function Header() {
    }
 
    const handleSearch = () => {
-    router.push("/cars")
+       const params = new URLSearchParams()
        
+       if (searchData.location) {
+           params.append('location', searchData.location)
+       }
+       if (searchData.pickupDate) {
+           params.append('pickupDate', searchData.pickupDate.toISOString())
+       }
+       if (searchData.returnDate) {
+           params.append('returnDate', searchData.returnDate.toISOString())
+       }
+       
+       router.push(`/cars?${params.toString()}`)
    }
 
    const getDefaultDates = () => {
