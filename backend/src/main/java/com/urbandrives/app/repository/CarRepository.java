@@ -20,6 +20,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     List<Car> findByModelContainingIgnoreCase(String model);
 
+    List<Car> findByLocationContainingIgnoreCase(String location);
+
 
     boolean existsByLicensePlate(String licensePlate);
 

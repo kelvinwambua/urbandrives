@@ -12,12 +12,14 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    private String fromEmail = "no-reply@urbandrives.com";
+
     public boolean sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
             var message = mailSender.createMimeMessage();
             var helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("shwiftykelvin@gmail.com");
+            helper.setFrom("fromEmail");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);

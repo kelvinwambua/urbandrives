@@ -1,5 +1,6 @@
 package com.urbandrives.app.service;
 
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.urbandrives.app.dto.CarDTO;
 import com.urbandrives.app.entity.Car;
 import com.urbandrives.app.entity.CarStatus;
@@ -17,6 +18,8 @@ public class CarService {
 
     @Autowired
     private CarRepository carRepository;
+
+
 
     public List<CarDTO> getAllCars() {
         return carRepository.findAll().stream()
@@ -51,6 +54,15 @@ public class CarService {
             .collect(Collectors.toList());
     }
 
+    public List<CarDTO> searchCarsByLocation(String location) {
+        if (location == null || location.isEmpty()) {
+            return getAllCars();
+        }
+        return carRepository.findByLocationContainingIgnoreCase(location).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public CarDTO saveCar(Car car) {
         Car savedCar = carRepository.save(car);
         return convertToDTO(savedCar);
@@ -71,6 +83,8 @@ public class CarService {
     public boolean existsByLicensePlateAndNotId(String licensePlate, Long id) {
         return carRepository.existsByLicensePlateAndIdNot(licensePlate, id);
     }
+
+
 
     private CarDTO convertToDTO(Car car) {
         CarDTO dto = new CarDTO();
