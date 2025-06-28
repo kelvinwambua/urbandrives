@@ -44,6 +44,9 @@ public class Car {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "location")
+    private String location;
+
     // Constructors
     public Car() {}
 
@@ -103,4 +106,7 @@ public class Car {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 }

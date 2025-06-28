@@ -17,6 +17,7 @@ public class CarDTO extends BaseDTO{
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String imageUrl;
+    private String location;
     // Constructors
     public CarDTO() {}
 
@@ -55,6 +56,9 @@ public class CarDTO extends BaseDTO{
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
 
 
