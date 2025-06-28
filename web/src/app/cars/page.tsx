@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
@@ -64,7 +64,7 @@ const getStatusColor = (status: string) => {
   }
 }
 
-export default function CarsListingPage() {
+function CarsListingContent() {
   const searchParams = useSearchParams()
   const [cars, setCars] = useState<Car[]>([])
   const [filteredCars, setFilteredCars] = useState<Car[]>([])
@@ -507,5 +507,13 @@ export default function CarsListingPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function CarsListingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CarsListingContent />
+    </Suspense>
   )
 }
