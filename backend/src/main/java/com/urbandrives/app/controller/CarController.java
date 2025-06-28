@@ -69,80 +69,9 @@ public class CarController {
     @PostMapping
     public ResponseEntity<CarDTO> createCar(@RequestBody CarDTO carDTO) {
         try {
-
             Car car = convertToEntity(carDTO);
-
-
-            CarDTO createdCar = carService.saveCar(car);
-
-            return ResponseEntity.ok(createdCar);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/with-image")
-    public ResponseEntity<CarDTO> createCarWithImage(
-        @RequestParam("make") String make,
-        @RequestParam("model") String model,
-        @RequestParam("year") Integer year,
-        @RequestParam("color") String color,
-        @RequestParam("licensePlate") String licensePlate,
-        @RequestParam("dailyRate") BigDecimal dailyRate,
-        @RequestParam(value = "description", required = false) String description,
-        @RequestParam(value = "file", required = false) MultipartFile file) {
-
-        try {
-            // Detailed logging
-            System.out.println("=== Received Parameters ===");
-            System.out.println("make: " + make);
-            System.out.println("model: " + model);
-            System.out.println("year: " + year);
-            System.out.println("color: " + color);
-            System.out.println("licensePlate: " + licensePlate);
-            System.out.println("dailyRate: " + dailyRate);
-            System.out.println("description: " + description);
-            System.out.println("file: " + (file != null ? file.getOriginalFilename() + " (" + file.getSize() + " bytes)" : "null"));
-            System.out.println("============================");
-
-            String imageUrl = null;
-            if (file != null && !file.isEmpty()) {
-                imageUrl = uploadService.upload(file);
-            }
-
-            Car car = new Car(make, model, year, color, licensePlate, dailyRate, imageUrl);
-            if (description != null) {
-                car.setDescription(description);
-            }
-
             CarDTO createdCar = carService.saveCar(car);
             return ResponseEntity.ok(createdCar);
-
-        } catch (Exception e) {
-            System.out.println("=== ERROR ===");
-            e.printStackTrace();
-            System.out.println("=============");
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CarDTO> updateCar(@PathVariable Long id, @RequestBody CarDTO carDTO) {
-        try {
-
-            Optional<CarDTO> existingCar = carService.getCarById(id);
-            if (existingCar.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-
-            Car car = convertToEntity(carDTO);
-            car.setId(id);
-
-
-            CarDTO updatedCar = carService.saveCar(car);
-
-            return ResponseEntity.ok(updatedCar);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -154,15 +83,12 @@ public class CarController {
         @RequestParam("file") MultipartFile file) {
 
         try {
-
             Optional<CarDTO> existingCar = carService.getCarById(id);
             if (existingCar.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
-
             String imageUrl = uploadService.upload(file);
-
 
             Car car = convertToEntity(existingCar.get());
             car.setId(id);
@@ -175,21 +101,6 @@ public class CarController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
-        try {
-            boolean deleted = carService.deleteCar(id);
-            if (deleted) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-
     private Car convertToEntity(CarDTO dto) {
         Car car = new Car();
         car.setMake(dto.getMake());
@@ -200,7 +111,6 @@ public class CarController {
         car.setDailyRate(dto.getDailyRate());
         car.setDescription(dto.getDescription());
         car.setImageUrl(dto.getImageUrl());
-
 
         if (dto.getStatus() != null) {
             car.setStatus(dto.getStatus());
