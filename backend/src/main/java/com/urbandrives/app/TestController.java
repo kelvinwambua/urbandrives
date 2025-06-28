@@ -1,4 +1,4 @@
-// src/main/java/com/example/demo/controllers/TestController.java
+// src/main/java/com/example/demo/controllers/EmailTestController.java
 package com.urbandrives.app;
 
 import java.util.Map;

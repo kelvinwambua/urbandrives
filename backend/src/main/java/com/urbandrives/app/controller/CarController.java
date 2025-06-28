@@ -29,8 +29,15 @@ public class CarController {
     private UploadService uploadService;
 
     @GetMapping
-    public ResponseEntity<List<CarDTO>> getAllCars() {
-        List<CarDTO> cars = carService.getAllCars();
+    public ResponseEntity<List<CarDTO>> getAllCars(@RequestParam(required = false) String location) {
+        List<CarDTO> cars;
+        if (location != null && !location.trim().isEmpty()) {
+
+            cars = carService.searchCarsByLocation(location);
+        } else {
+
+            cars = carService.getAllCars();
+        }
         return ResponseEntity.ok(cars);
     }
 
