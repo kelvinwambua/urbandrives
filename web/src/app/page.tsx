@@ -9,9 +9,18 @@ import Footer from "~/components/Footer";
 export default function HomePage() {
 	return (
 	<main>
-		  <Header />
-		  <HowItWorks/>
-		    <WhyChooseUs />
+		 <div id="rental-deals" >
+				  <Header />
+		 </div>
+	
+		  <div id="how-it-works" >
+			 <HowItWorks/>
+		  </div>
+		  <div id="why-choose-us" >
+			   <WhyChooseUs />
+		  </div>
+		 
+		 
 			<Footer/>
 	</main>
 	);

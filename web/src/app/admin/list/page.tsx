@@ -174,7 +174,7 @@ export default function UploadCarPage() {
         formDataToSend.append('file', selectedFile)
       }
 
-      const response = await fetch(`${APP_BASE_URL}/api/cars/with-image`, {
+      const response = await fetch(`${APP_BASE_URL}/api/admin/cars/with-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -525,7 +525,7 @@ export default function UploadCarPage() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="w-full bg-primary"
                     disabled={isUploading}
                   >
                     {isUploading ? (
@@ -541,9 +541,7 @@ export default function UploadCarPage() {
                     )}
                   </Button>
                   
-                  <p className="text-center text-sm text-gray-500 mt-4">
-                    By uploading, you agree to our terms of service and privacy policy
-                  </p>
+             
                 </CardContent>
               </Card>
             </div>
