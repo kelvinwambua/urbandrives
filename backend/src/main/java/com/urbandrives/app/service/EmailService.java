@@ -1,10 +1,15 @@
 package com.urbandrives.app.service;
 
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class EmailService {
@@ -12,44 +17,65 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    private String fromEmail = "no-reply@urbandrives.com";
+    @Value("${urbandrives.email.from}")
+    private String fromEmail;
 
-    public boolean sendHtmlEmail(String to, String subject, String htmlContent) {
+    // This method is now adjusted to accept attachment parameters
+    public boolean sendHtmlEmail(String to, String subject, String htmlContent,
+                                 byte[] attachmentBytes, String attachmentFileName, String attachmentContentType) {
         try {
-            var message = mailSender.createMimeMessage();
-            var helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessage message = mailSender.createMimeMessage();
+            // true indicates multipart message (for attachment), StandardCharsets.UTF_8 for encoding
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
-            helper.setFrom("fromEmail");
+            helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlContent, true);
+
+            // Add the PDF attachment if bytes are provided
+            if (attachmentBytes != null && attachmentBytes.length > 0) {
+                ByteArrayDataSource dataSource = new ByteArrayDataSource(attachmentBytes, attachmentContentType);
+                helper.addAttachment(attachmentFileName, dataSource);
+            }
 
             mailSender.send(message);
-            System.out.println("HTML email sent successfully to: " + to);
+            System.out.println("HTML email with attachment (if any) sent successfully to: " + to);
             return true;
         } catch (Exception e) {
             System.err.println("Error sending HTML email to " + to + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
+
     public void sendBookingConfirmationEmail(String recipientEmail, String customerName,
                                              String carDetails, String startDate, String endDate,
-                                             String totalAmount, Long bookingId) {
+                                             String totalAmount, Long bookingId,
+                                             byte[] attachmentBytes, // NEW: PDF bytes
+                                             String attachmentFileName, // NEW: PDF filename
+                                             String attachmentContentType // NEW: PDF content type
+    ) {
         String subject = "UrbanDrives: Your Booking #" + bookingId + " is Confirmed!";
         String htmlBody = createBookingConfirmationHtml(customerName, carDetails, startDate, endDate, totalAmount, bookingId);
-        sendHtmlEmail(recipientEmail, subject, htmlBody);
+
+
+        sendHtmlEmail(recipientEmail, subject, htmlBody,
+                attachmentBytes, attachmentFileName, attachmentContentType);
     }
+
 
     public void sendBookingCancellationEmail(String recipientEmail, String customerName, Long bookingId) {
         String subject = "UrbanDrives: Your Booking #" + bookingId + " Has Been Cancelled";
         String htmlBody = createBookingCancellationHtml(customerName, bookingId);
-        sendHtmlEmail(recipientEmail, subject, htmlBody);
+
+        sendHtmlEmail(recipientEmail, subject, htmlBody, null, null, null); // No attachment for cancellation by default
     }
 
-    private String createBookingConfirmationHtml(String customerName, String carDetails,
-                                                 String startDate, String endDate,
-                                                 String totalAmount, Long bookingId) {
+
+    public String createBookingConfirmationHtml(String customerName, String carDetails,
+                                                String startDate, String endDate,
+                                                String totalAmount, Long bookingId) {
         return String.format("""
             <!DOCTYPE html>
             <html lang="en">
@@ -172,7 +198,7 @@ public class EmailService {
 
                     <div class="content">
                         <div class="greeting">
-                            Hello %s! 👋
+                            Hello %s! 
                         </div>
 
                         <p>Thank you for choosing UrbanDrives! We're excited to serve you. Here are your booking details:</p>
@@ -181,17 +207,17 @@ public class EmailService {
                             <div class="booking-id">Booking #%d</div>
 
                             <div class="detail-row">
-                                <span class="detail-label">🚗 Vehicle:</span>
+                                <span class="detail-label">Vehicle:</span>
                                 <span class="detail-value">%s</span>
                             </div>
 
                             <div class="detail-row">
-                                <span class="detail-label">📅 Pickup Date:</span>
+                                <span class="detail-label"> Pickup Date:</span>
                                 <span class="detail-value">%s</span>
                             </div>
 
                             <div class="detail-row">
-                                <span class="detail-label">📅 Return Date:</span>
+                                <span class="detail-label"> Return Date:</span>
                                 <span class="detail-value">%s</span>
                             </div>
                         </div>
@@ -221,7 +247,7 @@ public class EmailService {
             """, customerName, bookingId, carDetails, startDate, endDate, totalAmount);
     }
 
-    private String createBookingCancellationHtml(String customerName, Long bookingId) {
+    public String createBookingCancellationHtml(String customerName, Long bookingId) {
         return String.format("""
             <!DOCTYPE html>
             <html lang="en">
@@ -333,12 +359,12 @@ public class EmailService {
                         <div class="cancellation-card">
                             <div class="booking-id">Booking #%d</div>
                             <p style="font-size: 18px; color: #7f1d1d;">
-                                ❌ <strong>Cancelled</strong>
+                                 <strong>Cancelled</strong>
                             </p>
                         </div>
 
                         <div class="warning-box">
-                            <strong>⚠️ Important:</strong> If you did not initiate this cancellation or have any questions about this cancellation,
+                            <strong>⚠ Important:</strong> If you did not initiate this cancellation or have any questions about this cancellation,
                             please contact us immediately.
                         </div>
 

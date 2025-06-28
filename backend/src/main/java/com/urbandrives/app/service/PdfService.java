@@ -1,6 +1,6 @@
 package com.urbandrives.app.service;
 import java.awt.Color;
-// OpenPDF imports
+
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -12,7 +12,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
 import com.urbandrives.app.entity.Booking;
-import org.springframework.stereotype.Service; // Note: No @Autowired EmailService needed here if not using HTML
+import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,45 +25,41 @@ public class PdfService {
 
 
     public byte[] generateBookingConfirmationPdf(Booking booking) throws IOException {
-        if (booking == null || booking.getCar() == null) {
-            throw new IllegalArgumentException("Booking or Car details are missing for PDF generation.");
-        }
-
-        Document document = new Document();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document();
 
         try {
-            PdfWriter.getInstance(document, baos); // Get a PdfWriter instance
-            document.open(); // Open the document for writing
+            PdfWriter.getInstance(document, baos);
+            document.open();
 
-            // Define Fonts
-            Font fontHeader = new Font(Font.HELVETICA, 24, Font.BOLD, Color.BLUE); // You can use com.lowagie.text.Color
+
+            Font fontHeader = new Font(Font.HELVETICA, 24, Font.BOLD, Color.BLUE);
             Font fontSubHeader = new Font(Font.HELVETICA, 18, Font.BOLD, Color.DARK_GRAY);
             Font fontBold = new Font(Font.HELVETICA, 12, Font.BOLD);
             Font fontNormal = new Font(Font.HELVETICA, 12, Font.NORMAL);
             Font fontSmall = new Font(Font.HELVETICA, 10, Font.NORMAL, Color.GRAY);
             Font fontTotalAmount = new Font(Font.HELVETICA, 16, Font.BOLD, Color.GREEN);
 
-            // --- Header ---
+
             Paragraph title = new Paragraph("Urbandrives - Booking Confirmation", fontHeader);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
-            // --- Booking ID ---
+
             Paragraph bookingIdPara = new Paragraph("Booking ID: #" + booking.getId(), fontSubHeader);
             bookingIdPara.setAlignment(Element.ALIGN_LEFT);
             bookingIdPara.setSpacingAfter(10);
             document.add(bookingIdPara);
 
-            // --- Booking Date ---
+
             Paragraph bookingDatePara = new Paragraph("Booking Date: " + booking.getCreatedAt().format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm")), fontNormal);
             bookingDatePara.setAlignment(Element.ALIGN_LEFT);
             bookingDatePara.setSpacingAfter(20);
             document.add(bookingDatePara);
 
 
-            // --- Customer Details Table ---
+
             document.add(new Paragraph("Customer Details:", fontSubHeader));
             document.add(new Paragraph(" ", fontNormal)); // Small space
 
@@ -71,7 +67,7 @@ public class PdfService {
             customerTable.setWidthPercentage(100);
             customerTable.setSpacingBefore(10f);
             customerTable.setSpacingAfter(20f);
-            float[] customerColWidths = {2f, 3f}; // Ratio of column widths
+            float[] customerColWidths = {2f, 3f};
             customerTable.setWidths(customerColWidths);
 
             addTableCell(customerTable, "Name:", fontBold, Element.ALIGN_LEFT, 0);
@@ -84,7 +80,7 @@ public class PdfService {
             document.add(customerTable);
 
 
-            // --- Car Details Table ---
+
             document.add(new Paragraph("Car Details:", fontSubHeader));
             document.add(new Paragraph(" ", fontNormal)); // Small space
 
@@ -107,7 +103,7 @@ public class PdfService {
             document.add(carTable);
 
 
-            // --- Rental Details Table ---
+
             document.add(new Paragraph("Rental Details:", fontSubHeader));
             document.add(new Paragraph(" ", fontNormal)); // Small space
 
@@ -128,14 +124,14 @@ public class PdfService {
             document.add(rentalTable);
 
 
-            // --- Total Amount ---
+
             Paragraph totalAmountPara = new Paragraph("Total Amount: Ksh " + booking.getTotalAmount().toPlainString(), fontTotalAmount);
             totalAmountPara.setAlignment(Element.ALIGN_RIGHT);
             totalAmountPara.setSpacingBefore(30);
             document.add(totalAmountPara);
 
 
-            // --- Footer ---
+
             Paragraph footer = new Paragraph("Thank you for choosing Urbandrives. We look forward to serving you!", fontSmall);
             footer.setAlignment(Element.ALIGN_CENTER);
             footer.setSpacingBefore(50);
@@ -147,9 +143,9 @@ public class PdfService {
 
 
         } catch (Exception e) {
-            System.err.println("Error generating PDF with OpenPDF: " + e.getMessage());
+            System.err.println("Error generating receipt : " + e.getMessage());
             e.printStackTrace();
-            throw new IOException("Failed to generate PDF for booking ID: " + booking.getId(), e);
+            throw new IOException("Failed to generate receipt for booking ID: " + booking.getId(), e);
         } finally {
             if (document.isOpen()) {
                 document.close();
@@ -158,13 +154,13 @@ public class PdfService {
         return baos.toByteArray();
     }
 
-    // Helper method to add a cell to a table
+
     private void addTableCell(PdfPTable table, String text, Font font, int alignment, int border) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(alignment);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPadding(5);
-        cell.setBorder(border); // No border
+        cell.setBorder(border);
         table.addCell(cell);
     }
 }
